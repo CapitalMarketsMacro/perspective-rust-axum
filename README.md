@@ -1,5 +1,7 @@
 # Perspective Rust + Axum Sample
 
+[![CI](https://github.com/CapitalMarketsMacro/perspective-rust-axum/actions/workflows/ci.yml/badge.svg)](https://github.com/CapitalMarketsMacro/perspective-rust-axum/actions/workflows/ci.yml)
+
 A minimal [Perspective](https://perspective.finos.org/) server built with the
 [Axum](https://github.com/tokio-rs/axum) web framework, adapted from the
 upstream [`examples/rust-axum`](https://github.com/perspective-dev/perspective/tree/master/examples/rust-axum)

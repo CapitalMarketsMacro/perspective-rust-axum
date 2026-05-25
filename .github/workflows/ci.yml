@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (Windows / MSVC, release)
+    runs-on: windows-latest
+    env:
+      CARGO_TERM_COLOR: always
+      # The Perspective C++ engine hardcodes the static MSVC CRT, so the whole
+      # native tree + Rust must use it too. `.cargo/config.toml` already points
+      # CMAKE_TOOLCHAIN_FILE at this file via a relative path; pin the absolute
+      # path here so resolution is unambiguous on the runner. (Process env wins
+      # over the non-forced [env] entry in config.toml.)
+      CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/cmake-msvc-runtime.cmake
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # Caches ~/.cargo and ./target, including the cmake-built C++ engine, so
+      # incremental runs skip recompiling protobuf / Abseil / Arrow / the engine.
+      - name: Cache cargo + build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Tool versions
+        shell: pwsh
+        run: |
+          rustc --version
+          cargo --version
+          cmake --version
+
+      # Builds in release (Rust's MSVC std always links the release CRT, so a
+      # debug C++ build would mismatch) with the `_hack` feature, which enables
+      # perspective/axum-ws. windows-latest provides VS 2022 (C++) + CMake;
+      # cargo's `cc` locates MSVC via vswhere with no dev-shell needed.
+      - name: Build (release)
+        run: cargo build --release --locked --features=_hack
+
+      - name: Upload server binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-axum-windows
+          path: target/release/rust-axum.exe
+          if-no-files-found: error
