@@ -30,6 +30,16 @@ WebSocket, opens `my_data_source`, and renders an interactive datagrid / charts 
 
 ## Run
 
+On Windows, the quickest path from a fresh clone is the bundled script (it sets
+the build config, vendors assets, and builds):
+
+```bat
+build.bat          :: build the release binary
+build.bat run      :: build, then start the server on http://localhost:3000
+```
+
+Or do it by hand (any platform):
+
 ```sh
 # 1. Vendor the Perspective frontend bundles + sample data into node_modules/
 npm install

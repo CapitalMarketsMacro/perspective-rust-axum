@@ -1,0 +1,6 @@
+# Normalize line endings in the repo to LF, with platform-appropriate checkout.
+* text=auto
+
+# Windows batch scripts must use CRLF or labels/goto can break on some shells.
+*.bat text eol=crlf
+*.cmd text eol=crlf
