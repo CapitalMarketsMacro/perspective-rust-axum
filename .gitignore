@@ -1,0 +1,12 @@
+# Rust
+/target
+
+# Node
+/node_modules
+
+# Scratch
+/_ref
+*.log
+
+# Local tooling
+/.claude

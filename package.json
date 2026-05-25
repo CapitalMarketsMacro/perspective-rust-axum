@@ -1,0 +1,20 @@
+{
+    "name": "rust-axum",
+    "private": true,
+    "version": "4.5.0",
+    "description": "An example of a Rust/Axum virtual Perspective server",
+    "scripts": {
+        "start": "cargo run --release --features=_hack",
+        "build": "cargo build --release --features=_hack"
+    },
+    "keywords": [],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "@perspective-dev/client": "4.5.0",
+        "@perspective-dev/viewer": "4.5.0",
+        "@perspective-dev/viewer-charts": "4.5.0",
+        "@perspective-dev/viewer-datagrid": "4.5.0",
+        "superstore-arrow": "1.0.0"
+    },
+    "devDependencies": {}
+}

@@ -1,0 +1,21 @@
+# Native build configuration for the Perspective C++ engine + protobuf.
+#
+# The Perspective C++ engine hardcodes the *static* MSVC C-runtime on Windows,
+# so the whole native tree (protobuf, Abseil, Arrow, the engine) and Rust itself
+# must link the static CRT. `+crt-static` makes Rust use the static CRT;
+# `cmake-msvc-runtime.cmake` aligns protobuf/Abseil onto it as well.
+#
+# IMPORTANT: build with `--release`. Rust's MSVC standard library always links
+# the *release* CRT, so a debug C++ build (/MTd) would mismatch and fail to
+# resolve `_calloc_dbg`. Release keeps the engine on /MT, matching Rust.
+#
+# Scoped to the MSVC target so Linux/macOS builds are unaffected.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# `cmake-msvc-runtime.cmake` is fed to every cmake build via CMAKE_TOOLCHAIN_FILE
+# and is a no-op on non-MSVC toolchains. `relative = true` resolves the path
+# against the project root (the parent of this `.cargo` directory); a
+# process-level CMAKE_TOOLCHAIN_FILE still takes precedence.
+[env]
+CMAKE_TOOLCHAIN_FILE = { value = "cmake-msvc-runtime.cmake", relative = true }
