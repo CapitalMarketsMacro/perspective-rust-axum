@@ -23,15 +23,30 @@ jobs:
       # path here so resolution is unambiguous on the runner. (Process env wins
       # over the non-forced [env] entry in config.toml.)
       CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}/cmake-msvc-runtime.cmake
+      # Build under a short root. perspective-server downloads the full Apache
+      # Arrow source tree (incl. deeply-nested java/flight/... paths); combined
+      # with the long default workspace path it exceeds Windows' 260-char
+      # MAX_PATH and Arrow's build fails with "Filename too long". A short target
+      # dir keeps every path under the limit.
+      CARGO_TARGET_DIR: 'C:\t'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Belt-and-suspenders for the same MAX_PATH issue: let git and the Win32
+      # file APIs handle >260-char paths during the Arrow fetch/build.
+      - name: Enable Windows long paths
+        shell: pwsh
+        run: |
+          git config --system core.longpaths true
+          New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' `
+            -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      # Caches ~/.cargo and ./target, including the cmake-built C++ engine, so
-      # incremental runs skip recompiling protobuf / Abseil / Arrow / the engine.
+      # Caches ~/.cargo and the (custom) target dir, including the cmake-built
+      # C++ engine, so incremental runs skip recompiling protobuf/Abseil/Arrow.
       - name: Cache cargo + build artifacts
         uses: Swatinem/rust-cache@v2
 
@@ -53,5 +68,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rust-axum-windows
-          path: target/release/rust-axum.exe
+          path: 'C:\t\release\rust-axum.exe'
           if-no-files-found: error
